@@ -1,0 +1,80 @@
+% Description: reproduce the imgradientxy() function behaviour (using
+% 'Prewitt') for yourself.
+%
+% Inputs: im: an image
+% 
+% Outputs: Gx an array of horizontal local gradient estimates in double
+% precision Gy an array of vertical local gradient estimates in double
+% precision
+% 
+% Notes: you might want to start by calling imfilter() to do the
+% convolutions for you, before then trying to replace them for yourself, or
+% you might prefer to jump straight into the convolutions. (Note if you do
+% use it that imfilter() will return the same data types you pass it, and
+% so you'l) A full implementatl lose information if you pass it uint8s.ion
+% should add padding around the image (by copying the closest pixel
+% values)
+function [Gx, Gy] = my_imgradientxy(im)
+
+    %graient matrix for multiplication for image convolution eqaution
+
+    GxFil =int64( [ -1  0  1;
+                    -1  0  1;
+                    -1  0  1 ]);
+
+    %matrix declared as int due to image extraction is uint8 
+    %data types need to be the same to work together
+    GyFil = int64([ -1 -1 -1;
+                     0  0  0;
+                     1  1  1]);
+
+
+
+    %add 1 pixel padding by duplicating inside layer
+    
+    % one row deeper and duplicate line
+    im(end+1,:) = im(end,1:1:end);
+    
+    % one column to the right and duplicate
+    im(:,end+1) = im(1:1:end,end);
+    
+    % one column to the left and duplicate
+    im = [im(1:1:end,1) im(1:1:end,1:1:end)];
+    
+    % one row to the top and duplicate
+    im = [im(1,1:1:end); im];
+    
+    %empty array for growing local graident
+    Gx = [];
+    Gy = [];
+    
+    %loop over array both vertiaclly and horizontailly for extracting each
+    %element
+    for i=1:1:size(im,1)
+        for j=1:1:size(im,2)
+            
+           %error check to stop out of bounds occuring when using 3*3 patch
+           if(j+2 <= size(im,1) && i+2 <= size(im,1))
+
+                %takes a 3*3 patch and increments for next patch
+                A = im(i:i+2,j:j+2);
+                %converts uint8 to int64 for same data type equation
+                A = int64(A);
+                
+                
+                %all elements are multipled togehter to create new image
+                %convolution patch
+                PreX = GxFil.*A;
+                PreY = GyFil.*A;
+
+                %all elements are added together to a single element and stored in a Gx and Gy
+    
+                Gx(i,j) =sum(sum(PreX));
+                Gy(i,j) =sum(sum(PreY));
+
+                %each final element is stored at the appropriate coordinate
+
+           end
+        end
+    end 
+end
